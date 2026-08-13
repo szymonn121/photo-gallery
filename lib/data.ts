@@ -33,18 +33,30 @@ export const getFeaturedPhoto = cache(async (): Promise<PhotoWithCollection | nu
   }
 });
 
-export async function getRecentPhotos(limit = 8): Promise<PhotoWithCollection[]> {
+export async function getRecentPhotos(
+  limit = 8
+): Promise<PhotoWithCollection[]> {
   try {
     const supabase = createPublicClient();
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("photos")
-      .select(photoSelect)
+      .select("*")
       .eq("status", "published")
       .lte("published_at", new Date().toISOString())
       .order("published_at", { ascending: false })
       .limit(limit);
+
+    console.log("PHOTO QUERY DATA:", data);
+    console.log("PHOTO QUERY ERROR:", error);
+
+    if (error) {
+      return [];
+    }
+
     return (data ?? []) as PhotoWithCollection[];
-  } catch {
+  } catch (error) {
+    console.error("PHOTO QUERY EXCEPTION:", error);
     return [];
   }
 }
