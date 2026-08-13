@@ -8,7 +8,7 @@ import type {
 
 const photoSelect = `
   *,
-  collection:collections(id,name,slug)
+  collection:collections!photos_collection_id_fkey(id,name,slug)
 `;
 
 export const getSiteSettings = cache(
