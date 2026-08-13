@@ -152,20 +152,34 @@ export async function getPhotoNavigation(photo: PhotoWithCollection): Promise<{ 
   }
 }
 
-export async function getRelatedPhotos(photo: PhotoWithCollection) {
-  if (!photo.collection_id) return [];
+export async function getRelatedPhotos(
+  photo: PhotoWithCollection
+): Promise<PhotoWithCollection[]> {
+  if (!photo.collection_id) {
+    return [];
+  }
+
   try {
     const supabase = createPublicClient();
-    const { data } = await supabase
+
+    const { data, error } = await supabase
       .from("photos")
       .select(photoSelect)
       .eq("status", "published")
       .eq("collection_id", photo.collection_id)
       .neq("id", photo.id)
+      .lte("published_at", new Date().toISOString())
       .order("published_at", { ascending: false })
       .limit(4);
+
+    if (error) {
+      console.error("getRelatedPhotos Supabase error:", error);
+      return [];
+    }
+
     return (data ?? []) as PhotoWithCollection[];
-  } catch {
+  } catch (error) {
+    console.error("getRelatedPhotos exception:", error);
     return [];
   }
 }
