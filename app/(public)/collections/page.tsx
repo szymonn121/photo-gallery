@@ -3,7 +3,7 @@ import { CollectionCard } from "@/components/gallery/collection-card";
 import { getCollectionCovers, getPublishedCollections } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Kolekcje", description: "Tematyczne serie i opowieści fotograficzne." };
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function CollectionsPage() {
   const collections = await getPublishedCollections();

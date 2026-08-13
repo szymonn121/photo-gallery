@@ -5,7 +5,7 @@ import { SearchFilters } from "@/components/gallery/search-filters";
 import { getGalleryPhotos, getPublishedCollections } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Galeria", description: "Przeglądaj wszystkie opublikowane fotografie." };
-export const revalidate = 120;
+export const dynamic = "force-dynamic";
 
 export default async function GalleryPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;

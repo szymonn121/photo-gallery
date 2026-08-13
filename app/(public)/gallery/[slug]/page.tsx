@@ -8,7 +8,7 @@ import { ShareButton } from "@/components/photo/share-button";
 import { getPhotoBySlug, getPhotoNavigation, getRelatedPhotos, getSiteSettings } from "@/lib/data";
 import { absoluteUrl, formatDate } from "@/lib/utils";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
