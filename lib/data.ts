@@ -129,6 +129,9 @@ export async function getGalleryPhotos(options: {
   try {
     const supabase = createPublicClient();
 
+    console.log("=== GALLERY QUERY ===");
+    console.log("OPTIONS:", options);
+
     const from = (options.page - 1) * options.perPage;
     const to = from + options.perPage - 1;
 
@@ -152,26 +155,25 @@ export async function getGalleryPhotos(options: {
     }
 
     if (options.collection) {
-  const { data: collection, error } = await supabase
-    .from("collections")
-    .select("id")
-    .eq("slug", options.collection)
-    .eq("status", "published")
-    .maybeSingle();
+      const { data: collection, error: collectionError } = await supabase
+        .from("collections")
+        .select("id")
+        .eq("slug", options.collection)
+        .eq("status", "published")
+        .maybeSingle();
 
-  if (error) {
-    console.error("getGalleryPhotos collection:", error);
-    return { photos: [], count: 0 };
-  }
+      console.log("COLLECTION:", collection);
+      console.log("COLLECTION ERROR:", collectionError);
 
-  const collectionId = (collection as { id: string } | null)?.id;
+      if (collectionError || !collection) {
+        return { photos: [], count: 0 };
+      }
 
-  if (!collectionId) {
-    return { photos: [], count: 0 };
-  }
+      const collectionId = (collection as { id: string }).id;
 
-  query = query.eq("collection_id", collectionId);
-}
+      query = query.eq("collection_id", collectionId);
+    }
+
     if (options.sort === "oldest") {
       query = query.order("published_at", { ascending: true });
     } else if (options.sort === "featured") {
@@ -184,8 +186,11 @@ export async function getGalleryPhotos(options: {
 
     const { data, count, error } = await query.range(from, to);
 
+    console.log("GALLERY DATA:", data);
+    console.log("GALLERY COUNT:", count);
+    console.log("GALLERY ERROR:", error);
+
     if (error) {
-      console.error("getGalleryPhotos Supabase error:", error);
       return { photos: [], count: 0 };
     }
 
@@ -194,7 +199,7 @@ export async function getGalleryPhotos(options: {
       count: count ?? 0,
     };
   } catch (error) {
-    console.error("getGalleryPhotos exception:", error);
+    console.error("getGalleryPhotos EXCEPTION:", error);
     return { photos: [], count: 0 };
   }
 }
