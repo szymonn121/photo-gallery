@@ -70,12 +70,12 @@ export async function getGalleryPhotos(options: {
     if (safe) query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
   }
   if (options.collection) {
-    const { data: collection } = await supabase
+    const { data: collection } = (await supabase
       .from("collections")
       .select("id")
       .eq("slug", options.collection)
       .eq("status", "published")
-      .maybeSingle();
+      .maybeSingle()) as { data: { id: string } | null };
     if (collection) query = query.eq("collection_id", collection.id);
     else return { photos: [], count: 0 };
   }
@@ -101,7 +101,7 @@ export const getPhotoBySlug = cache(async (slug: string): Promise<PhotoWithColle
   return data as PhotoWithCollection | null;
 });
 
-export async function getPhotoNavigation(photo: PhotoWithCollection) {
+export async function getPhotoNavigation(photo: PhotoWithCollection): Promise<{ previous: { title: string; slug: string } | null; next: { title: string; slug: string } | null }> {
   const supabase = createPublicClient();
   const [previous, next] = await Promise.all([
     supabase
@@ -138,7 +138,7 @@ export async function getRelatedPhotos(photo: PhotoWithCollection) {
   return (data ?? []) as PhotoWithCollection[];
 }
 
-export const getCollectionBySlug = cache(async (slug: string) => {
+export const getCollectionBySlug = cache(async (slug: string): Promise<Collection | null> => {
   const supabase = createPublicClient();
   const { data } = await supabase
     .from("collections")

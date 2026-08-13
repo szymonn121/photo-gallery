@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import type { Photo } from "@/types/database";
 
 export default async function AdminPhotosPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
@@ -10,7 +11,7 @@ export default async function AdminPhotosPage({ searchParams }: { searchParams: 
   let query = supabase.from("photos").select("id,title,slug,thumbnail_url,width,height,status,is_featured,published_at,updated_at").order("updated_at", { ascending: false });
   if (q) query = query.ilike("title", `%${q.replace(/[,%()]/g, " ")}%`);
   if (status) query = query.eq("status", status);
-  const { data: photos } = await query.limit(200);
+  const { data: photos } = (await query.limit(200)) as { data: Photo[] | null };
 
   return (
     <div>

@@ -22,8 +22,8 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Nie udało się zweryfikować obrazów." }, { status: 400 });
   }
-  if (parsed.data.is_featured) await supabase.from("photos").update({ is_featured: false }).eq("is_featured", true);
-  const { data, error } = await supabase.from("photos").insert(parsed.data as Database["public"]["Tables"]["photos"]["Insert"]).select("id").single();
+  if (parsed.data.is_featured) await (supabase as any).from("photos").update({ is_featured: false }).eq("is_featured", true);
+  const { data, error } = await (supabase as any).from("photos").insert(parsed.data as any).select("id").single();
   if (error) return NextResponse.json({ error: error.code === "23505" ? "Taki slug jest już używany." : "Nie udało się zapisać fotografii." }, { status: 400 });
   revalidatePath("/", "layout");
   return NextResponse.json(data, { status: 201 });

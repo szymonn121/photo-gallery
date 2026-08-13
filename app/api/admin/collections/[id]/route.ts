@@ -12,7 +12,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (!admin) return NextResponse.json({ error: "Brak autoryzacji." }, { status: 401 });
   const parsed = collectionInputSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }, { status: 400 });
-  const { error } = await supabase.from("collections").update(parsed.data as Database["public"]["Tables"]["collections"]["Update"]).eq("id", id);
+  const { error } = await (supabase as any).from("collections").update(parsed.data as any).eq("id", id);
   if (error) return NextResponse.json({ error: error.code === "23505" ? "Taki slug jest już używany." : "Nie udało się zapisać kolekcji." }, { status: 400 });
   revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });

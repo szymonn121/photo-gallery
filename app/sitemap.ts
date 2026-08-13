@@ -4,10 +4,10 @@ import { absoluteUrl } from "@/lib/utils";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createPublicClient();
-  const [{ data: photos }, { data: collections }] = await Promise.all([
+  const [{ data: photos }, { data: collections }] = (await Promise.all([
     supabase.from("photos").select("slug,updated_at").eq("status", "published").lte("published_at", new Date().toISOString()),
     supabase.from("collections").select("slug,updated_at").eq("status", "published"),
-  ]);
+  ])) as [{ data: { slug: string; updated_at: string }[] | null }, { data: { slug: string; updated_at: string }[] | null }];
   return [
     { url: absoluteUrl("/"), changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl("/gallery"), changeFrequency: "daily", priority: .9 },

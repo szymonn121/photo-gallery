@@ -16,7 +16,7 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
   const ip = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const rateKey = `${ip}:${email}`.slice(0, 240);
   const publicClient = createPublicClient();
-  const { data: allowed } = await publicClient.rpc("check_login_rate_limit", { p_key: rateKey });
+  const { data: allowed } = await publicClient.rpc("check_login_rate_limit", { p_key: rateKey } as any);
   if (!allowed) return { error: "Zbyt wiele prób logowania. Spróbuj ponownie za kilka minut." };
 
   const supabase = await createClient();

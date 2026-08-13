@@ -76,7 +76,9 @@ function ExpandedMap({ latitude, longitude, title }: { latitude: number; longitu
       const icon = L.divIcon({ className: "", html: '<div class="cinematic-marker"></div>', iconSize: [22, 22], iconAnchor: [11, 22] });
       L.marker([latitude, longitude], { icon }).addTo(map).bindPopup(title).openPopup();
     });
-    return () => map?.remove();
+    return () => {
+      map?.remove();
+    };
   }, [id, latitude, longitude, title]);
   return <div id={id} className="h-full w-full" />;
 }

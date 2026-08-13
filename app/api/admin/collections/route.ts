@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   if (!admin) return NextResponse.json({ error: "Brak autoryzacji." }, { status: 401 });
   const parsed = collectionInputSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }, { status: 400 });
-  const { error } = await supabase.from("collections").insert(parsed.data as Database["public"]["Tables"]["collections"]["Insert"]);
+  const { error } = await (supabase as any).from("collections").insert(parsed.data as any);
   if (error) return NextResponse.json({ error: error.code === "23505" ? "Taki slug jest już używany." : "Nie udało się dodać kolekcji." }, { status: 400 });
   revalidatePath("/", "layout");
   return NextResponse.json({ ok: true }, { status: 201 });

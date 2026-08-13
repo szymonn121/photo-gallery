@@ -12,7 +12,7 @@ export async function PUT(request: Request) {
   const parsed = settingsInputSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }, { status: 400 });
   const cleaned = { ...parsed.data, email: parsed.data.email || null, instagram_url: parsed.data.instagram_url || null, x_url: parsed.data.x_url || null };
-  const { error } = await supabase.from("site_settings").update(cleaned as Database["public"]["Tables"]["site_settings"]["Update"]).eq("id", true);
+  const { error } = await (supabase as any).from("site_settings").update(cleaned as any).eq("id", true);
   if (error) return NextResponse.json({ error: "Nie udało się zapisać ustawień." }, { status: 400 });
   revalidatePath("/", "layout");
   return NextResponse.json({ ok: true });
