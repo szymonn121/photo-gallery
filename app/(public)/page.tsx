@@ -24,7 +24,13 @@ export default async function HomePage() {
           </div>
           <Link href="/gallery" className="button-secondary self-start sm:self-auto">Cała galeria</Link>
         </Reveal>
-        <GalleryGrid photos={recent} />
+        <div>
+  <pre className="text-white">
+    {JSON.stringify(recent, null, 2)}
+  </pre>
+
+  <GalleryGrid photos={recent} />
+</div>
       </section>
 
       <section className="border-y border-[var(--line)] bg-[#eadcc8] py-20 text-[#261914] sm:py-28">
