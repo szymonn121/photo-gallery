@@ -1,0 +1,18 @@
+import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { requireAdminApi } from "@/lib/admin/auth";
+import { isTrustedMutationRequest } from "@/lib/admin/security";
+import { collectionInputSchema } from "@/lib/validation/photo";
+import type { Database } from "@/types/database";
+
+export async function POST(request: Request) {
+  if (!isTrustedMutationRequest(request)) return NextResponse.json({ error: "Odrzucono żądanie z obcego źródła." }, { status: 403 });
+  const { supabase, admin } = await requireAdminApi();
+  if (!admin) return NextResponse.json({ error: "Brak autoryzacji." }, { status: 401 });
+  const parsed = collectionInputSchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Nieprawidłowe dane." }, { status: 400 });
+  const { error } = await supabase.from("collections").insert(parsed.data as Database["public"]["Tables"]["collections"]["Insert"]);
+  if (error) return NextResponse.json({ error: error.code === "23505" ? "Taki slug jest już używany." : "Nie udało się dodać kolekcji." }, { status: 400 });
+  revalidatePath("/", "layout");
+  return NextResponse.json({ ok: true }, { status: 201 });
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Miejsce na portret fotografa</title>
+  <desc id="desc">Ciepła, abstrakcyjna grafika zastępcza, którą można podmienić własnym portretem.</desc>
+  <defs>
+    <radialGradient id="glow" cx="65%" cy="22%" r="65%">
+      <stop offset="0" stop-color="#c88448" stop-opacity=".58"/>
+      <stop offset=".55" stop-color="#5c3b29" stop-opacity=".26"/>
+      <stop offset="1" stop-color="#1d1410" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#4a342a"/>
+      <stop offset="1" stop-color="#1a120f"/>
+    </linearGradient>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency=".65" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="table" tableValues="0 .12"/></feComponentTransfer>
+    </filter>
+  </defs>
+  <rect width="800" height="1000" fill="url(#base)"/>
+  <rect width="800" height="1000" fill="url(#glow)"/>
+  <circle cx="400" cy="355" r="145" fill="#d8c6ad" opacity=".22"/>
+  <path d="M155 1000c28-270 116-430 245-430s217 160 245 430" fill="#d8c6ad" opacity=".16"/>
+  <rect width="800" height="1000" filter="url(#grain)" opacity=".55"/>
+  <text x="400" y="905" text-anchor="middle" fill="#eadcc8" opacity=".72" font-family="Georgia, serif" font-size="34">PORTRET AUTORA</text>
+  <text x="400" y="946" text-anchor="middle" fill="#c8ad8d" opacity=".72" font-family="Arial, sans-serif" font-size="16" letter-spacing="4">PODMIEŃ PLIK W /PUBLIC</text>
+</svg>
