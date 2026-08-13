@@ -25,6 +25,7 @@ export async function login(
     };
   }
 
+  // Pobranie adresu IP użytkownika
   const requestHeaders = await headers();
 
   const forwardedFor = requestHeaders.get("x-forwarded-for");
@@ -34,18 +35,19 @@ export async function login(
     requestHeaders.get("x-real-ip") ||
     "unknown";
 
+  // Klucz rate limitu: IP + e-mail
   const rateKey = `${ip}:${email}`.slice(0, 240);
 
+  // Sprawdzenie limitu logowania
   const publicClient = createPublicClient();
 
   const {
     data: allowed,
     error: rateLimitError,
-  } = await publicClient.rpc("check_login_rate_limit", {
+  } = await (publicClient as any).rpc("check_login_rate_limit", {
     p_key: rateKey,
   });
 
-  // Nie traktuj błędu RPC jako przekroczenia limitu.
   if (rateLimitError) {
     console.error("Login rate limit error:", rateLimitError);
 
@@ -61,6 +63,7 @@ export async function login(
     };
   }
 
+  // Logowanie przez Supabase Auth
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -76,10 +79,12 @@ export async function login(
     };
   }
 
+  // Pobranie ID zalogowanego użytkownika
   const { data: claims } = await supabase.auth.getClaims();
 
   const userId = claims?.claims?.sub;
 
+  // Sprawdzenie, czy użytkownik jest administratorem
   const { data: admin } = userId
     ? await supabase
         .from("admin_users")
@@ -88,6 +93,7 @@ export async function login(
         .maybeSingle()
     : { data: null };
 
+  // Zwykły użytkownik nie może wejść do panelu
   if (!admin) {
     await supabase.auth.signOut();
 
@@ -96,5 +102,6 @@ export async function login(
     };
   }
 
+  // Sukces
   redirect("/admin");
 }
