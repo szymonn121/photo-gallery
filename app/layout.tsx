@@ -7,7 +7,7 @@ const serif = Cormorant_Garamond({ subsets: ["latin", "latin-ext"], variable: "-
 const sans = Manrope({ subsets: ["latin", "latin-ext"], variable: "--font-sans", display: "swap" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: { default: "Galeria fotografii", template: "%s — Galeria fotografii" },
   description: "Autorska galeria fotografii o ciepłej, filmowej estetyce.",
   alternates: { canonical: absoluteUrl("/") },
