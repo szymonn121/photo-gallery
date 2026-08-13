@@ -5,7 +5,7 @@ import { CollectionCard } from "@/components/gallery/collection-card";
 import { Reveal } from "@/components/ui/reveal";
 import { getCollectionCovers, getFeaturedPhoto, getPublishedCollections, getRecentPhotos, getSiteSettings } from "@/lib/data";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [featured, recent, collections, settings] = await Promise.all([
