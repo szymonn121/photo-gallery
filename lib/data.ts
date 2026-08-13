@@ -47,20 +47,17 @@ export async function getRecentPhotos(
       .order("published_at", { ascending: false })
       .limit(limit);
 
-    console.log("PHOTO QUERY DATA:", data);
-    console.log("PHOTO QUERY ERROR:", error);
-
     if (error) {
+      console.error("getRecentPhotos:", error);
       return [];
     }
 
     return (data ?? []) as PhotoWithCollection[];
   } catch (error) {
-    console.error("PHOTO QUERY EXCEPTION:", error);
+    console.error("getRecentPhotos exception:", error);
     return [];
   }
 }
-
 export async function getPublishedCollections(limit?: number): Promise<Collection[]> {
   try {
     const supabase = createPublicClient();
