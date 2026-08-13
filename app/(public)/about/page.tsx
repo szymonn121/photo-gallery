@@ -15,7 +15,7 @@ export default async function AboutPage() {
       <div className="grid gap-12 lg:grid-cols-[.82fr_1.18fr] lg:items-start">
         <div className="lg:sticky lg:top-28">
           <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-[var(--line)] bg-[#251914]">
-            <Image src="/portrait-placeholder.svg" alt={`Portret: ${settings?.photographer_name ?? "fotograf"}`} fill priority sizes="(max-width: 1024px) 100vw, 42vw" className="object-cover" />
+            <Image src="/portrait_picture.jpg" alt={`Portret: ${settings?.photographer_name ?? "fotograf"}`} fill priority sizes="(max-width: 1024px) 100vw, 42vw" className="object-cover" />
           </div>
         </div>
         <article>
