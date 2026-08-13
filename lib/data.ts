@@ -8,9 +8,13 @@ const photoSelect = `
 `;
 
 export const getSiteSettings = cache(async (): Promise<SiteSettings | null> => {
-  const supabase = createPublicClient();
-  const { data } = await supabase.from("site_settings").select("*").eq("id", true).maybeSingle();
-  return data;
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase.from("site_settings").select("*").eq("id", true).maybeSingle();
+    return data;
+  } catch {
+    return null;
+  }
 });
 
 export const getFeaturedPhoto = cache(async (): Promise<PhotoWithCollection | null> => {
