@@ -18,27 +18,35 @@ export const getSiteSettings = cache(async (): Promise<SiteSettings | null> => {
 });
 
 export const getFeaturedPhoto = cache(async (): Promise<PhotoWithCollection | null> => {
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("photos")
-    .select(photoSelect)
-    .eq("status", "published")
-    .eq("is_featured", true)
-    .lte("published_at", new Date().toISOString())
-    .maybeSingle();
-  return data as PhotoWithCollection | null;
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("photos")
+      .select(photoSelect)
+      .eq("status", "published")
+      .eq("is_featured", true)
+      .lte("published_at", new Date().toISOString())
+      .maybeSingle();
+    return data as PhotoWithCollection | null;
+  } catch {
+    return null;
+  }
 });
 
 export async function getRecentPhotos(limit = 8): Promise<PhotoWithCollection[]> {
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("photos")
-    .select(photoSelect)
-    .eq("status", "published")
-    .lte("published_at", new Date().toISOString())
-    .order("published_at", { ascending: false })
-    .limit(limit);
-  return (data ?? []) as PhotoWithCollection[];
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("photos")
+      .select(photoSelect)
+      .eq("status", "published")
+      .lte("published_at", new Date().toISOString())
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    return (data ?? []) as PhotoWithCollection[];
+  } catch {
+    return [];
+  }
 }
 
 export async function getPublishedCollections(limit?: number): Promise<Collection[]> {
@@ -64,108 +72,132 @@ export async function getGalleryPhotos(options: {
   collection?: string;
   sort?: "newest" | "oldest" | "featured";
 }) {
-  const supabase = createPublicClient();
-  const from = (options.page - 1) * options.perPage;
-  const to = from + options.perPage - 1;
-  let query = supabase
-    .from("photos")
-    .select(photoSelect, { count: "exact" })
-    .eq("status", "published")
-    .lte("published_at", new Date().toISOString());
-
-  if (options.query) {
-    const safe = options.query.replace(/[^\p{L}\p{N}\s-]/gu, " ").replace(/\s+/g, " ").trim();
-    if (safe) query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
-  }
-  if (options.collection) {
-    const { data: collection } = (await supabase
-      .from("collections")
-      .select("id")
-      .eq("slug", options.collection)
+  try {
+    const supabase = createPublicClient();
+    const from = (options.page - 1) * options.perPage;
+    const to = from + options.perPage - 1;
+    let query = supabase
+      .from("photos")
+      .select(photoSelect, { count: "exact" })
       .eq("status", "published")
-      .maybeSingle()) as { data: { id: string } | null };
-    if (collection) query = query.eq("collection_id", collection.id);
-    else return { photos: [], count: 0 };
+      .lte("published_at", new Date().toISOString());
+
+    if (options.query) {
+      const safe = options.query.replace(/[^\p{L}\p{N}\s-]/gu, " ").replace(/\s+/g, " ").trim();
+      if (safe) query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%`);
+    }
+    if (options.collection) {
+      const { data: collection } = (await supabase
+        .from("collections")
+        .select("id")
+        .eq("slug", options.collection)
+        .eq("status", "published")
+        .maybeSingle()) as { data: { id: string } | null };
+      if (collection) query = query.eq("collection_id", collection.id);
+      else return { photos: [], count: 0 };
+    }
+
+    if (options.sort === "oldest") query = query.order("published_at", { ascending: true });
+    else if (options.sort === "featured") {
+      query = query.order("is_featured", { ascending: false }).order("published_at", { ascending: false });
+    } else query = query.order("published_at", { ascending: false });
+
+    const { data, count } = await query.range(from, to);
+    return { photos: (data ?? []) as PhotoWithCollection[], count: count ?? 0 };
+  } catch {
+    return { photos: [], count: 0 };
   }
-
-  if (options.sort === "oldest") query = query.order("published_at", { ascending: true });
-  else if (options.sort === "featured") {
-    query = query.order("is_featured", { ascending: false }).order("published_at", { ascending: false });
-  } else query = query.order("published_at", { ascending: false });
-
-  const { data, count } = await query.range(from, to);
-  return { photos: (data ?? []) as PhotoWithCollection[], count: count ?? 0 };
 }
 
 export const getPhotoBySlug = cache(async (slug: string): Promise<PhotoWithCollection | null> => {
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("photos")
-    .select(photoSelect)
-    .eq("slug", slug)
-    .eq("status", "published")
-    .lte("published_at", new Date().toISOString())
-    .maybeSingle();
-  return data as PhotoWithCollection | null;
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("photos")
+      .select(photoSelect)
+      .eq("slug", slug)
+      .eq("status", "published")
+      .lte("published_at", new Date().toISOString())
+      .maybeSingle();
+    return data as PhotoWithCollection | null;
+  } catch {
+    return null;
+  }
 });
 
 export async function getPhotoNavigation(photo: PhotoWithCollection): Promise<{ previous: { title: string; slug: string } | null; next: { title: string; slug: string } | null }> {
-  const supabase = createPublicClient();
-  const [previous, next] = await Promise.all([
-    supabase
-      .from("photos")
-      .select("title,slug")
-      .eq("status", "published")
-      .lt("published_at", photo.published_at ?? photo.created_at)
-      .order("published_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from("photos")
-      .select("title,slug")
-      .eq("status", "published")
-      .gt("published_at", photo.published_at ?? photo.created_at)
-      .order("published_at", { ascending: true })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-  return { previous: previous.data, next: next.data };
+  try {
+    const supabase = createPublicClient();
+    const [previous, next] = await Promise.all([
+      supabase
+        .from("photos")
+        .select("title,slug")
+        .eq("status", "published")
+        .lt("published_at", photo.published_at ?? photo.created_at)
+        .order("published_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("photos")
+        .select("title,slug")
+        .eq("status", "published")
+        .gt("published_at", photo.published_at ?? photo.created_at)
+        .order("published_at", { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+    return { previous: previous.data, next: next.data };
+  } catch {
+    return { previous: null, next: null };
+  }
 }
 
 export async function getRelatedPhotos(photo: PhotoWithCollection) {
   if (!photo.collection_id) return [];
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("photos")
-    .select(photoSelect)
-    .eq("status", "published")
-    .eq("collection_id", photo.collection_id)
-    .neq("id", photo.id)
-    .order("published_at", { ascending: false })
-    .limit(4);
-  return (data ?? []) as PhotoWithCollection[];
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("photos")
+      .select(photoSelect)
+      .eq("status", "published")
+      .eq("collection_id", photo.collection_id)
+      .neq("id", photo.id)
+      .order("published_at", { ascending: false })
+      .limit(4);
+    return (data ?? []) as PhotoWithCollection[];
+  } catch {
+    return [];
+  }
 }
 
 export const getCollectionBySlug = cache(async (slug: string): Promise<Collection | null> => {
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("collections")
-    .select("*")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .maybeSingle();
-  return data;
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("collections")
+      .select("*")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
+    return data;
+  } catch {
+    return null;
+  }
 });
 
 export async function getCollectionPhotos(collectionId: string) {
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("photos")
-    .select(photoSelect)
-    .eq("collection_id", collectionId)
-    .eq("status", "published")
-    .order("published_at", { ascending: false });
-  return (data ?? []) as PhotoWithCollection[];
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("photos")
+      .select(photoSelect)
+      .eq("collection_id", collectionId)
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
+    return (data ?? []) as PhotoWithCollection[];
+  } catch {
+    return [];
+  }
 }
 
 export async function getCollectionCovers(collections: Collection[]) {
