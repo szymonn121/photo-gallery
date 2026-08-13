@@ -39,7 +39,7 @@ export async function getRecentPhotos(
   try {
     const supabase = createPublicClient();
 
-    const { data: photos, error } = await supabase
+    const { data, error } = await supabase
       .from("photos")
       .select("*")
       .eq("status", "published")
@@ -52,45 +52,7 @@ export async function getRecentPhotos(
       return [];
     }
 
-    if (!photos?.length) {
-      return [];
-    }
-
-    const collectionIds = [
-      ...new Set(
-        photos
-          .map((photo) => photo.collection_id)
-          .filter(Boolean)
-      ),
-    ];
-
-    if (!collectionIds.length) {
-      return photos as PhotoWithCollection[];
-    }
-
-    const { data: collections, error: collectionsError } = await supabase
-      .from("collections")
-      .select("id,name,slug")
-      .in("id", collectionIds);
-
-    if (collectionsError) {
-      console.error("getRecentPhotos collections:", collectionsError);
-      return photos as PhotoWithCollection[];
-    }
-
-    const collectionMap = new Map(
-      (collections ?? []).map((collection) => [
-        collection.id,
-        collection,
-      ])
-    );
-
-    return photos.map((photo) => ({
-      ...photo,
-      collection: photo.collection_id
-        ? collectionMap.get(photo.collection_id) ?? null
-        : null,
-    })) as PhotoWithCollection[];
+    return (data ?? []) as unknown as PhotoWithCollection[];
   } catch (error) {
     console.error("getRecentPhotos exception:", error);
     return [];
