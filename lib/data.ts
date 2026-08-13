@@ -42,15 +42,19 @@ export async function getRecentPhotos(limit = 8): Promise<PhotoWithCollection[]>
 }
 
 export async function getPublishedCollections(limit?: number): Promise<Collection[]> {
-  const supabase = createPublicClient();
-  let query = supabase
-    .from("collections")
-    .select("*")
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
-  if (limit) query = query.limit(limit);
-  const { data } = await query;
-  return data ?? [];
+  try {
+    const supabase = createPublicClient();
+    let query = supabase
+      .from("collections")
+      .select("*")
+      .eq("status", "published")
+      .order("created_at", { ascending: false });
+    if (limit) query = query.limit(limit);
+    const { data } = await query;
+    return data ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export async function getGalleryPhotos(options: {
@@ -167,7 +171,11 @@ export async function getCollectionPhotos(collectionId: string) {
 export async function getCollectionCovers(collections: Collection[]) {
   const ids = collections.map((item) => item.cover_photo_id).filter(Boolean) as string[];
   if (!ids.length) return new Map<string, PhotoWithCollection>();
-  const supabase = createPublicClient();
-  const { data } = await supabase.from("photos").select(photoSelect).in("id", ids).eq("status", "published");
-  return new Map(((data ?? []) as PhotoWithCollection[]).map((photo) => [photo.id, photo]));
+  try {
+    const supabase = createPublicClient();
+    const { data } = await supabase.from("photos").select(photoSelect).in("id", ids).eq("status", "published");
+    return new Map(((data ?? []) as PhotoWithCollection[]).map((photo) => [photo.id, photo]));
+  } catch {
+    return new Map<string, PhotoWithCollection>();
+  }
 }
